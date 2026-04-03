@@ -1,10 +1,6 @@
 #ifndef OPERATIONS_H_INCLUDED
 #define OPERATIONS_H_INCLUDED
 
-#include <type_traits>
-
-using namespace std;
-
 enum Operations{
     ADD, // Adição
     SUB, // Subtração
@@ -18,7 +14,6 @@ enum Operations{
 template<typename T>
 struct Pass
 {
-    static_assert(is_same_v<T, int> || is_same_v<T, float>, "The pass must be int or float.");
     Operations operation;
     T value;
 };
@@ -26,7 +21,6 @@ struct Pass
 template<typename T>
 struct AlgebricExpression
 {
-    static_assert(is_same_v<T, int> || is_same_v<T, float>, "The pass of AlgebricExpression must be int or float.");
     Pass<T> pass;
     T expressionSum;
 };
@@ -63,6 +57,9 @@ template<typename T>
 void setExpressionSum(AlgebricExpression<T> &alg, T value) { alg.expressionSum = value; }
 
 template<typename T>
+void setAlgebricPass(AlgebricExpression<T> &alg, Pass<T> pass) { alg.pass = pass; }
+
+template<typename T>
 void addToExpressionSum(AlgebricExpression<T> &alg, T val){ alg.expressionSum += val; }
 
 template<typename T>
@@ -77,6 +74,9 @@ template<typename T>
 void divideExpressionSum(AlgebricExpression<T> &alg, T val){
     if(val != 0){
         alg.expressionSum /= val;
+    }else
+    {
+        throw "DIVISION_BY_ZERO";
     }
 }
 
@@ -99,7 +99,7 @@ void calcExpressValue(AlgebricExpression<T> &algebric){
             divideExpressionSum(algebric, val);
             break;
         case ZERA:
-            setExpressionSum(algebric, 0);
+            setExpressionSum(algebric, static_cast<T>(0));
             break;
         default:
             break;

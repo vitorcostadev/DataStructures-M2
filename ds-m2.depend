@@ -1,0 +1,20 @@
+# depslib dependency file v1.0
+1775252194 source:c:\dev\ds-m2\main.cpp
+	<iostream>
+	<iomanip>
+	<cstring>
+	"Interface.h"
+
+1775252238 c:\dev\ds-m2\interface.h
+	<iostream>
+	<string>
+	<vector>
+	<cctype>
+	"Operations.h"
+	"Stack.h"
+
+1775251822 c:\dev\ds-m2\operations.h
+
+1775194194 c:\dev\ds-m2\stack.h
+	<iostream>
+

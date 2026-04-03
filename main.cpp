@@ -1,122 +1,23 @@
 #include <iostream>
-#include <cctype>
-#include "Operations.h"
-#include "Stack.h"
-#include <vector>
-#define PREFIX "/"
+#include <iomanip>
+#include <cstring>
+#include "Interface.h"
 
 using namespace std;
 
-void initMessage()
-{
-    cout << "\033[2J\033[1;1H";
-    cout << "----- > EDITOR DE EXPRESSÃO ALGÉBRICA < -----" << endl;
-    cout << "["<<PREFIX<<"INICIO]  :  {INICIALIZA O PROGRAMA}" << endl;
-    cout << "["<<PREFIX<<"ZERA]  :  {(RE)INICIZALIZA A EXPRESSÃO ARITIMÉTICA}" << endl;
-    cout << "["<<PREFIX<<"SOMA (value)]  :  {SOMA value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
-    cout << "["<<PREFIX<<"MULTIPLICA (value)]  :  {MULTIPLICA O value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
-    cout << "["<<PREFIX<<"DIVIDE (value)]  :  {DIVIDE O value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
-    cout << "["<<PREFIX<<"PARCELAS]  :  {EXIBE OS VALORES DE CADA PARCELA DA EXPRESSÃO}" << endl;
-    cout << "["<<PREFIX<<"IGUAL]  :  {EXIBE O RESULTADO DA AVALIAÇÃO DA EXPRESSÃO ARITIMÉTICA}" << endl;
-    cout << "["<<PREFIX<<"FIM]  :  {FINALIZA O PROGRAMA}" << endl;
-    cout << "----- > EDITOR DE EXPRESSÃO ALGÉBRICA < -----" << endl;
-}
-
-bool parseUserInput(string userInput)
-{
-    for (char& c : userInput)
-    {
-        c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
-    }
-
-    if(userInput.empty() || userInput[0] != PREFIX[0])
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool isValidCommand(string command, vector<string> validCommands)
-{
-    for(string validCmd : validCommands)
-    {
-        for(char& ch : command)
-        {
-            ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
-        }
-        for(char& ch : validCmd)
-        {
-            ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
-        }
-        if(validCmd == command) return true;
-    }
-    return false;
-}
-
-int getValueFromCommand(string userInput)
-{
-    size_t spacePos = userInput.find(' ');
-    if (spacePos != string::npos)
-    {
-        string valueStr = userInput.substr(spacePos + 1);
-        try
-        {
-            return stoi(valueStr);
-        }
-        catch (const invalid_argument& e)
-        {
-            throw "INVALID_VALUE";
-        }
-    }
-    else
-    {
-        throw "VALUE_NOT_FOUND";
-    }
-}
-
-string getCommandWithoutValue(string userInput)
-{
-    size_t spacePos = userInput.find(' ');
-    if (spacePos != string::npos)
-    {
-        return userInput.substr(0, spacePos);
-    }
-    else
-    {
-        return userInput;
-    }
-}
-
-template<typename T>
-void printParcelas(Stack<Pass<T>> stack){
-    cout << "--> Parcelas da expressão algébrica: " << endl;
-    int sz = size(stack);
-    for(int i = 1; i <= sz; i++){
-        try{
-            Pass<T> pass = get(stack, i);
-            Operations op = getOperation(pass);
-            T val = getValue(pass);
-            cout << "Operação: " << op << ", Valor: " << val << endl;
-        }catch(const char* msg){
-            cout << "Erro ao acessar parcela: " << msg << endl;
-            break;
-        }
-    }
-}
-
 int main()
 {
-    Stack<Pass<int>> stack;
+    Stack<Pass<float>> stack;
     create(stack);
 
-    Pass<int> pass;
+    Pass<float> pass;
     createPass(pass);
 
-    AlgebricExpression<int> alg;
+    AlgebricExpression<float> alg;
     createAlgebric(alg);
 
-    string userInput = "";
+    string userInput = "", action="";
+    Operations actuallyOp;
     bool started = false;
 
     do
@@ -139,7 +40,8 @@ int main()
         if(!isValidCommand(command,
     {
         "INICIO", "ZERA", "SOMA", "MULTIPLICA",
-        "DIVIDE", "PARCELAS", "IGUAL", "FIM"
+        "DIVIDE", "PARCELAS", "IGUAL", "FIM",
+        "SUBTRAI"
     }))
         {
             cout << "ERRO! Comando digitado incorretamente ou não existe." << endl;
@@ -147,70 +49,110 @@ int main()
             continue;
         }
 
-        if(command == "fim")
-        {
-            break;
-        }
+        bool isMath = true;
 
-        if(command == "inicio")
+        if(started == true && command != "inicio")
         {
-            if(!started)
+
+            if(command == "soma"){
+                actuallyOp = ADD;
+                action = "adicionado à";
+            } else if(command == "subtrai")
             {
-                cout << "--> Editor de expressão algébrica inicializado!" << endl;
-                createAlgebric(alg);
-                createPass(pass);
-                started = true;
+                actuallyOp = SUB;
+                action = "subtraído da";
+            }else if(command == "multiplica")
+            {
+                actuallyOp = MULT;
+                action = "multiplicado na";
+            }else if(command == "divide")
+            {
+                actuallyOp = DIV;
+                action = "dividido na";
+            }
+            else
+            {
+                isMath = false;
+            }
+        }else
+        {
+            if(command == "inicio")
+            {
+                isMath = false;
             }else
             {
-                cout << "--> Você já inicializou a expressão neste processo." << endl;
+                cout << "Você deve utilizar o comando " << PREFIX << "inicio antes!" << endl; cin.get(); continue;
             }
-            cin.get();
         }
 
-        if(started == true){
-            if(command == "soma")
+        if(isMath)
+        {
+            try
             {
-                try
-                {
-                    setOperation(pass, ADD);
-                    setValue(pass, getValueFromCommand(userInput));
-                    push(stack, pass);
+                setOperation(pass, actuallyOp);
+                setValue(pass, getValueFromCommand(userInput));
+                push(stack, pass);
 
-                    cout << "--> O valor " << getValue(pass) << " foi adicionado à expressão." << endl;
-                }
-                catch(const char* msg)
+                cout << "--> O valor " << fixed << setprecision(2) << getValue(pass) << " foi " << action << " expressão!" << endl;
+                cin.get();
+
+            }catch(const char *err)
+            {
+                if(string(err) == "VALUE_NOT_FOUND")
                 {
-                    if(string(msg) == "VALUE_NOT_FOUND")
-                    {
-                        cout << "ERRO! Valor não encontrado no comando." << endl;
-                    }
-                    else if(string(msg) == "INVALID_VALUE")
-                    {
-                        cout << "ERRO! Valor inválido no comando." << endl;
-                    }
+                    cerr << "ERRO! Valor não encontrado no comando." << endl;
+                }
+                else if(string(err) == "INVALID_VALUE")
+                {
+                    cerr << "ERRO! Valor inválido no comando." << endl;
+                }else
+                {
+                    cerr << "ERRO! Não foi possivel definir a causa, log: " << err << endl;
+                    destroy(stack);
+                    exit(-1);
                 }
                 cin.get();
             }
-
-            else if(command == "igual")
+        }else
+        {
+            if(command == "igual")
             {
+                setExpressionSum(alg, static_cast<float>(0));
+                Stack<Pass<float>> temp;
+                create(temp);
+
                 while(size(stack) > 0)
+                {
+                    Pass<float> pass = top(stack);
+                    push(temp, pass);
+                    pop(stack);
+                }
+
+                while(size(temp) > 0)
                 {
                     try
                     {
-                        Pass<int> pass = top(stack);
-                        alg.pass = pass;
+                        Pass<float> pass = top(temp);
+                        setAlgebricPass(alg, pass);
                         calcExpressValue(alg);
-                        pop(stack);
-                    }
-                    catch(const char* msg)
+                        pop(temp);
+                    }catch(const char *err)
                     {
-                        cout << "ERRO na operação: " << msg << endl;
-                        break;
+                        if(strcmp(err, "DIVISON_BY_ZERO") == 0)
+                        {
+                            cerr << "Algebric Error: Tentativa de dividir por zero!" << endl;
+                            destroy(temp);
+                        }
                     }
                 }
-                cout << "--> Resultado da expressão algébrica: " << getExpressionSum(alg) << endl;
+
+                Pass<float> newPass = {ADD, getExpressionSum(alg)};
+                push(stack, newPass);
+
+                cout << "--> Resultado parcial: " << fixed << setprecision(2) << getExpressionSum(alg) << endl;
+                destroy(temp);
                 cin.get();
+
             }
 
             else if(command == "parcelas")
@@ -221,69 +163,33 @@ int main()
 
             else if(command == "zera")
             {
-                setExpressionSum(alg, 0);
+                setExpressionSum(alg, static_cast<float>(0));
                 destroy(stack);
                 cout << "O valor da expressão foi alterado para 0." << endl;
                 cin.get();
-            }
 
-            else if(command == "divide")
-            {
-                try
-                {
-                    setOperation(pass, DIV);
-                    setValue(pass, getValueFromCommand(userInput));
-                    push(stack, pass);
-
-                    cout << "--> O valor " << getValue(pass) << " foi dividido na expressão." << endl;
-                }
-                catch(const char* msg)
-                {
-                    if(string(msg) == "VALUE_NOT_FOUND")
-                    {
-                        cout << "ERRO! Valor não encontrado no comando." << endl;
-                    }
-                    else if(string(msg) == "INVALID_VALUE")
-                    {
-                        cout << "ERRO! Valor inválido no comando." << endl;
-                    }
-                }
-                cin.get();
-            }
-
-            else if(command == "multiplica")
-            {
-                try
-                {
-                    setOperation(pass, MULT);
-                    setValue(pass, getValueFromCommand(userInput));
-                    push(stack, pass);
-
-                    cout << "--> O valor " << getValue(pass) << " foi multiplicado na expressão." << endl;
-                }
-                catch(const char* msg)
-                {
-                    if(string(msg) == "VALUE_NOT_FOUND")
-                    {
-                        cout << "ERRO! Valor não encontrado no comando." << endl;
-                    }
-                    else if(string(msg) == "INVALID_VALUE")
-                    {
-                        cout << "ERRO! Valor inválido no comando." << endl;
-                    }
-                }
-                cin.get();
-            }
-        }else
+            }else if(command == "inicio")
         {
-            cout << "Você deve utilizar o comando " << PREFIX << "inicio primeiro!" << endl;
+            if(!started)
+            {
+                cout << "--> Editor de expressão algébrica inicializado!" << endl;
+                createAlgebric(alg);
+                createPass(pass);
+                started = true;
+            }
+            else
+            {
+                cout << "--> Você já inicializou a expressão neste processo." << endl;
+            }
             cin.get();
         }
-
-    }
-    while(true);
+            else
+            {
+                break;
+            }
+        }
+    }while(true);
 
     destroy(stack);
-
     return 0;
 }
