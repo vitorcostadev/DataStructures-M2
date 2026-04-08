@@ -8,13 +8,11 @@ using namespace std;
 int main()
 {
     Stack<Pass<float>> stack;
-    create(stack);
+    Stack<float> parcelas;
+    create(stack); create(parcelas);
 
     Pass<float> pass;
-    createPass(pass);
-
     AlgebricExpression<float> alg;
-    createAlgebric(alg);
 
     string userInput = "", action="";
     Operations actuallyOp;
@@ -89,13 +87,18 @@ int main()
         {
             try
             {
-                setOperation(pass, actuallyOp);
-                setValue(pass, getValueFromCommand(userInput));
-                push(stack, pass);
+                float val = getValueFromCommand(userInput);
 
-                cout << "--> O valor " << fixed << setprecision(2) << getValue(pass) << " foi " << action << " expressão!" << endl;
+                if(val == 0 && actuallyOp == DIV){
+                    cerr << "--> Você não pode dividir essa expressão por zero." << endl;
+                }else{
+                    setOperation(pass, actuallyOp);
+                    setValue(pass, val);
+                    push(stack, pass);
+
+                    cout << "--> O valor " << fixed << setprecision(2) << getValue(pass) << " foi " << action << " expressão!" << endl;
+                }
                 cin.get();
-
             }catch(const char *err)
             {
                 if(string(err) == "VALUE_NOT_FOUND")
@@ -123,31 +126,31 @@ int main()
 
                 while(size(stack) > 0)
                 {
-                    Pass<float> pass = top(stack);
+                    pass = top(stack);
                     push(temp, pass);
                     pop(stack);
                 }
 
+                int cont = 0;
                 while(size(temp) > 0)
                 {
-                    try
+                    
+                    pass = top(temp);
+                    setAlgebricPass(alg, pass);
+                    calcExpressValue(alg);
+                    pop(temp);
+                    
+                    cont++;
+                    if(cont > 1)
                     {
-                        Pass<float> pass = top(temp);
-                        setAlgebricPass(alg, pass);
-                        calcExpressValue(alg);
-                        pop(temp);
-                    }catch(const char *err)
-                    {
-                        if(strcmp(err, "DIVISON_BY_ZERO") == 0)
-                        {
-                            cerr << "Algebric Error: Tentativa de dividir por zero!" << endl;
-                            destroy(temp);
-                        }
+                    push(parcelas, getExpressionSum(alg));
                     }
                 }
 
-                Pass<float> newPass = {ADD, getExpressionSum(alg)};
-                push(stack, newPass);
+                Pass<float> basePass;
+                setOperation(basePass, ADD);
+                setValue(basePass, getExpressionSum(alg));
+                push(stack, basePass);
 
                 cout << "--> Resultado parcial: " << fixed << setprecision(2) << getExpressionSum(alg) << endl;
                 destroy(temp);
@@ -157,14 +160,14 @@ int main()
 
             else if(command == "parcelas")
             {
-                printParcelas(stack);
+                printParcelas(parcelas);
                 cin.get();
             }
 
             else if(command == "zera")
             {
                 setExpressionSum(alg, static_cast<float>(0));
-                destroy(stack);
+                destroy(stack); destroy(parcelas);
                 cout << "O valor da expressão foi alterado para 0." << endl;
                 cin.get();
 
@@ -191,5 +194,6 @@ int main()
     }while(true);
 
     destroy(stack);
+    destroy(parcelas);
     return 0;
 }

@@ -6,9 +6,7 @@ enum Operations{
     SUB, // Subtração
     MULT, // Multiplicação
     DIV, // Divisão
-    PARCELAS,
     ZERA,
-    FIM
 };
 
 template<typename T>
@@ -65,10 +63,8 @@ void addToExpressionSum(AlgebricExpression<T> &alg, T val){ alg.expressionSum +=
 template<typename T>
 void subtractFromExpressionSum(AlgebricExpression<T> &alg, T val){ alg.expressionSum -= val; }
 
-
 template<typename T>
 void multiplyExpressionSum(AlgebricExpression<T> &alg, T val){ alg.expressionSum *= val; }
-
 
 template<typename T>
 void divideExpressionSum(AlgebricExpression<T> &alg, T val){

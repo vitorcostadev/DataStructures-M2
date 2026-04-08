@@ -7,6 +7,7 @@
 #include <cctype>
 #include "Operations.h"
 #include "Stack.h"
+#include <algorithm>
 
 #define PREFIX "/"
 
@@ -19,6 +20,7 @@ inline void initMessage()
     cout << "["<<PREFIX<<"INICIO]  :  {INICIALIZA O PROGRAMA}" << endl;
     cout << "["<<PREFIX<<"ZERA]  :  {(RE)INICIZALIZA A EXPRESSÃO ARITIMÉTICA}" << endl;
     cout << "["<<PREFIX<<"SOMA (value)]  :  {SOMA value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
+    cout << "["<<PREFIX<<"SOMA (value)] : {SUBTRAI value COM O VALOR DA EXPRESSÃO ARITIMETICA}" << endl;
     cout << "["<<PREFIX<<"MULTIPLICA (value)]  :  {MULTIPLICA O value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
     cout << "["<<PREFIX<<"DIVIDE (value)]  :  {DIVIDE O value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
     cout << "["<<PREFIX<<"PARCELAS]  :  {EXIBE OS VALORES DE CADA PARCELA DA EXPRESSÃO}" << endl;
@@ -29,10 +31,8 @@ inline void initMessage()
 
 inline bool parseUserInput(string &userInput)
 {
-    for (char& c : userInput)
-    {
-        c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
-    }
+    transform(userInput.begin(), userInput.end(), userInput.begin(),
+              [](unsigned char c){ return tolower(c); });
 
     if(userInput.empty() || userInput[0] != PREFIX[0])
     {
@@ -46,10 +46,9 @@ inline bool isValidCommand(string command, vector<string> validCommands)
 {
     for(string validCmd : validCommands)
     {
-        for(char& ch : validCmd)
-        {
-            ch = static_cast<char>(tolower(static_cast<unsigned char>(ch)));
-        }
+        transform(validCmd.begin(), validCmd.end(), validCmd.begin(),
+                  [](unsigned char c){ return tolower(c); });
+
         if(validCmd == command) return true;
     }
     return false;
@@ -65,7 +64,11 @@ inline float getValueFromCommand(string userInput)
         {
             return stof(valueStr);
         }
-        catch (const invalid_argument& e)
+        catch (const invalid_argument &e)
+        {
+            throw "INVALID_VALUE";
+        }
+        catch (const out_of_range &e)
         {
             throw "INVALID_VALUE";
         }
@@ -89,26 +92,31 @@ inline string getCommandWithoutValue(string userInput)
     }
 }
 
-template<typename T>
-void printParcelas(Stack<Pass<T>> stack)
+inline void printParcelas(Stack<float> parcelas)
 {
-    std::cout << "--> Parcelas da expressão algébrica: " << endl;
-    int sz = size(stack);
-    for(int i = 1; i <= sz; i++)
+    int sz = size(parcelas);
+
+    if (sz == 0)
     {
-        try
-        {
-            Pass<T> pass = get(stack, i);
-            Operations op = getOperation(pass);
-            T val = getValue(pass);
-            std::cout << "Operação: " << op << ", Valor: " << val << endl;
-        }
-        catch(const char* msg)
-        {
-            std::cout << "Erro ao acessar parcela: " << msg << endl;
-            break;
+        cout << "--> Nenhuma parcela foi calculada ainda." << endl;
+        return;
+    }
+
+    cout << "--> Parcelas da expressão algébrica: ";
+
+    for(int i = sz; i >= 1; i--)
+    {
+        float v = get(parcelas, i);
+
+        cout << fixed << setprecision(2) << v;
+
+        if (i > 2) {
+            cout << ", ";
+        } else if (i == 2) {
+            cout << " e ";
         }
     }
+    cout << endl;
 }
 
 #endif
