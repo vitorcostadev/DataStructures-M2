@@ -1,6 +1,4 @@
 #include <iostream>
-#include <iomanip>
-#include <cstring>
 #include "Interface.h"
 
 using namespace std;

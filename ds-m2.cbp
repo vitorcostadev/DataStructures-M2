@@ -23,7 +23,7 @@
 		<Unit filename="Operations.h" />
 		<Unit filename="Stack.h" />
 		<Unit filename="main.cpp" />
-		<Unit filename="leia.pdf" />
+		<Unit filename="README.pdf" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

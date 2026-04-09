@@ -2,9 +2,10 @@
 #define INTERFACE_H_INCLUDED
 
 #include <iostream>
-#include <string>
+#include <cstring>
 #include <vector>
 #include <cctype>
+#include <iomanip>
 #include "Operations.h"
 #include "Stack.h"
 #include <algorithm>
@@ -20,7 +21,7 @@ inline void initMessage()
     cout << "["<<PREFIX<<"INICIO]  :  {INICIALIZA O PROGRAMA}" << endl;
     cout << "["<<PREFIX<<"ZERA]  :  {(RE)INICIZALIZA A EXPRESSÃO ARITIMÉTICA}" << endl;
     cout << "["<<PREFIX<<"SOMA (value)]  :  {SOMA value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
-    cout << "["<<PREFIX<<"SOMA (value)] : {SUBTRAI value COM O VALOR DA EXPRESSÃO ARITIMETICA}" << endl;
+    cout << "["<<PREFIX<<"SUBTRAI (value)] : {SUBTRAI value COM O VALOR DA EXPRESSÃO ARITIMETICA}" << endl;
     cout << "["<<PREFIX<<"MULTIPLICA (value)]  :  {MULTIPLICA O value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
     cout << "["<<PREFIX<<"DIVIDE (value)]  :  {DIVIDE O value COM O VALOR DA EXPRESSÃO ARITIMÉTICA}" << endl;
     cout << "["<<PREFIX<<"PARCELAS]  :  {EXIBE OS VALORES DE CADA PARCELA DA EXPRESSÃO}" << endl;
